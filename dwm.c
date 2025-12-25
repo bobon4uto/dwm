@@ -205,7 +205,15 @@ static void setup(void);
 static void seturgent(Client *c, int urg);
 static void showhide(Client *c);
 static void spawn(const Arg *arg);
+
+static void autostarttagsspawner(void);
+static void applyautostarttags(Client *c);
+
+// TODO
+
+
 static void tag(const Arg *arg);
+static void tagview(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tile(Monitor *m);
 static void togglebar(const Arg *arg);
@@ -260,6 +268,9 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 };
 static Atom wmatom[WMLast], netatom[NetLast];
 static int running = 1;
+static int autostartindex = 0;
+static _Bool autostartcomplete = 0;
+static int autostarttags = 0;
 static Cur *cursor[CurLast];
 static Clr **scheme;
 static Display *dpy;
@@ -274,6 +285,26 @@ static Window root, wmcheckwin;
 struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
 
 /* function implementations */
+
+#ifdef LOGGING
+void printcheck1(const char * title,const char * name)
+{
+		if (!title)
+		{printf("NULL == %s", name);}
+		else {printf("%s == %s IS %d", title, name, strstr(name, title));}
+}
+void printcheck(const Rule *r, Client *c,const char* class,const char* instance)
+{
+	printf("\n!!!!!title\n");
+		printcheck1(r->title, c->name);
+	printf("\n!!!!!class\n");
+		printcheck1(r->class, class);
+	printf("\n!!!!!instanse\n");
+		printcheck1(r->instance, instance);
+	printf("\n!!!!!NEXTRULE!!\n");
+}
+
+#endif // LOGGING
 void
 applyrules(Client *c)
 {
@@ -292,6 +323,9 @@ applyrules(Client *c)
 
 	for (i = 0; i < LENGTH(rules); i++) {
 		r = &rules[i];
+#ifdef LOGGING
+		printcheck(r, c, class, instance);
+#endif
 		if ((!r->title || strstr(c->name, r->title))
 		&& (!r->class || strstr(class, r->class))
 		&& (!r->instance || strstr(instance, r->instance)))
@@ -1027,13 +1061,24 @@ killclient(const Arg *arg)
 	}
 }
 
+#ifdef DEBUG
+void
+dwm_debug()
+{
+    volatile int a = 0;
+    volatile int b = 0;
+    while(a == 0){
+        b = 1;
+    }
+}
+#endif
+
 void
 manage(Window w, XWindowAttributes *wa)
 {
 	Client *c, *t = NULL;
 	Window trans = None;
 	XWindowChanges wc;
-
 	c = ecalloc(1, sizeof(Client));
 	c->win = w;
 	/* geometry */
@@ -1049,7 +1094,12 @@ manage(Window w, XWindowAttributes *wa)
 		c->tags = t->tags;
 	} else {
 		c->mon = selmon;
-		applyrules(c);
+		if (!autostartcomplete){
+			applyrules(c);
+			//applyautostarttags(c);
+		} else {
+			applyrules(c);
+		}
 	}
 
 	if (c->x + WIDTH(c) > c->mon->wx + c->mon->ww)
@@ -1384,6 +1434,18 @@ run(void)
 	XEvent ev;
 	/* main event loop */
 	XSync(dpy, False);
+	//Arg a = (Arg){.v= { "dunst" ,NULL} };
+	//Arg* arg = &a;
+	//spawn(arg);
+	//execvp(((char **)arg->v)[0], (char **)arg->v);
+	//system("dunst");
+	//I dont wanna check autostart each time so yeah.
+	do {
+		if (!autostartcomplete)
+			autostarttagsspawner();
+		else break;
+	}
+	while (running && !XNextEvent(dpy, &ev));
 	while (running && !XNextEvent(dpy, &ev))
 		if (handler[ev.type])
 			handler[ev.type](&ev); /* call handler */
@@ -1644,12 +1706,44 @@ showhide(Client *c)
 }
 
 void
+applyautostarttags(Client *c)
+{
+	if (!c)
+		return;
+	autostarttags = autostarttags<<1;
+	c->tags = autostarttags;
+	//autostarttags = 0;
+	if ( autostarttags == 0b10000000) 
+	{ autostartcomplete = 1;}
+	return;
+}
+
+void
+autostarttagsspawner(void){
+	
+	if (autostart[++autostartindex].cmd == NULL) {
+	autostartcomplete = 1;
+		autostarttags =1; return;
+	}
+	Arg arg ={0};
+	autostarttags = autostart[autostartindex+1].tags;
+	arg.v = autostart[autostartindex].cmd;
+	
+	//Arg arg2 = {.ui = autostarttags};
+	//view(&arg2);	
+
+	spawn(&arg);
+}
+
+
+void
 spawn(const Arg *arg)
 {
 	struct sigaction sa;
 
-	if (arg->v == dmenucmd)
-		dmenumon[0] = '0' + selmon->num;
+	// zachem?
+	//if (arg->v == dmenucmd)
+		//dmenumon[0] = '0' + selmon->num;
 	if (fork() == 0) {
 		if (dpy)
 			close(ConnectionNumber(dpy));
@@ -1673,6 +1767,13 @@ tag(const Arg *arg)
 		focus(NULL);
 		arrange(selmon);
 	}
+}
+
+void
+tagview(const Arg *arg)
+{
+	tag(arg);
+	view(arg);
 }
 
 void
@@ -2142,6 +2243,10 @@ zoom(const Arg *arg)
 int
 main(int argc, char *argv[])
 {
+#ifdef LOGGING
+	printf("HELLO WORLD!!!");
+	fprintf(stderr, "HELLO ERROR!!!");
+#endif
 	if (argc == 2 && !strcmp("-v", argv[1]))
 		die("dwm-"VERSION);
 	else if (argc != 1)
@@ -2156,6 +2261,10 @@ main(int argc, char *argv[])
 	if (pledge("stdio rpath proc exec", NULL) == -1)
 		die("pledge");
 #endif /* __OpenBSD__ */
+#ifdef DEBUG
+	dwm_debug();
+#endif
+
 	scan();
 	run();
 	cleanup();

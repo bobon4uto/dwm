@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+set -ex
+# Make sure to build dwm with the commented out CFLAGS that include -g
+# and add -DDEBUG to those flags.
+
+startx
+#./xinitrc_test -- /usr/bin/Xephyr -screen 800x600 -br -reset -terminate :1 2> /dev/null &
+#sleep 5
+#dwmpid=$(pgrep -n dwm)
+#sudo -E gdb -p ${dwmpid}
+
