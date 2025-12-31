@@ -1,5 +1,6 @@
 /* See LICENSE file for copyright and license details. */
 
+
 /* appearance */
 static const unsigned int borderpx  = 0;        /* border pixel of windows */
 static const unsigned int snap      = 1;       /* snap pixel */
@@ -20,6 +21,7 @@ static const char *colors[][3]      = {
 
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+
 
 /*typedef struct {
 	const char *class;
@@ -54,6 +56,7 @@ static const int refreshrate = 120;  /* refresh rate (per second) for client mov
 
 static const int monocle_layout = 0; 
 static const int tile_layout = 1; 
+static const int float_layout = 2; 
 static const Layout layouts[] = {
 	/* symbol     arrange function */
 	{ "[M]",      monocle },/* first entry is default */
@@ -87,8 +90,6 @@ static const Layout layouts[] = {
 
 
 /* autostart */
-static const char *browsercmd[]   = {"kitty", NULL};
-static const char *emacscmd[]     = {"emacs",     NULL};
 // last cmd must be NULL! 
 typedef struct { 
 	const char** cmd;
@@ -100,8 +101,7 @@ typedef struct {
 // NOTE THAT MACRO DOES ONE TAG, NOT MASK OF MANY!!!
 // NOTE: tags not implemented.
 static const Autostartcmd autostart[]  = {
-	ASTART(1,"/bin/sh", "-c", SCRIPTS "setup_rus.sh"),
-	ASTART(1,"/bin/sh", "-c", SCRIPTS "setup_rus.sh"),
+	ASTART(1,"/bin/sh", "-c", SCRIPTS "tearing_fix.sh"),
 	//{.cmd = emacscmd,     .tags = 1 << 7 },
 	ASTART(0,"kitty","--hold","nvim"),
 	ASTART(1,"/bin/sh", "-c", SCRIPTS "autostart_workaround.sh"),
@@ -118,11 +118,8 @@ static const Autostartcmd autostart[]  = {
 
 // my favorite terminal
 // my favorite browser (so true)
-static const char *browser[]  = { "librewolf", NULL };
 // run any app
-static char *drun[] = {"rofi", "-show", "drun", NULL };
 
-static const char *cmd_probe[]  = { "kitty", "--hold", "echo probe1", NULL};
 
 // WIN + key
 #define WIN(key, ...) CMD(WIN_K,key,__VA_ARGS__)
@@ -130,6 +127,8 @@ static const char *cmd_probe[]  = { "kitty", "--hold", "echo probe1", NULL};
 #define CWIN(key, ...) CMD(WIN_K|CTRL_K,key,__VA_ARGS__)
 // SHIFT + WIN + key
 #define SWIN(key, ...) CMD(WIN_K|SHIFT_K,key,__VA_ARGS__)
+// just key
+#define KEY(key, ...) CMD(0,key,__VA_ARGS__)
 // some other mod
 #define CMD(mod, key, ...) { mod,key, spawn, {.v = (const char*[]){  __VA_ARGS__ , NULL } } }
 
@@ -148,13 +147,15 @@ static const Key keys[] = {
 	// folder navigator
 	WIN(XK_n, "dolphin"),
 	// PURGE ... maybe...
-	WIN(XK_l, "/bin/sh","-c", SCRIPTS "purge_maybe.sh" ),
+	//WIN(XK_l, "/bin/sh","-c", SCRIPTS "purge_maybe.sh" ),
 	
 	// kill selected window
 	{ WIN_K,             XK_q,      killclient,     {0} },
 
+
+	WIN(XK_r,"/bin/sh", "-c", SCRIPTS "setup_rus.sh"),
 	WIN(XK_e,"/bin/sh", "-c", SCRIPTS "caps_to_esc.sh"),
-	WIN(XK_r,"/bin/sh", "-c", SCRIPTS "esc_to_caps.sh"),
+	//WIN(XK_r,"/bin/sh", "-c", SCRIPTS "esc_to_caps.sh"),
 	// battery,
   WIN(XK_x, "/bin/sh","-c", SCRIPTS "battery.sh"),
 	// time
@@ -170,6 +171,7 @@ static const Key keys[] = {
 	// technically a fullscreen
 	{ WIN_K,   XK_f,      setlayout,      {.v = &layouts[monocle_layout]} },
 	{ WIN_K,   XK_d,      setlayout,      {.v = &layouts[tile_layout]} },
+	{ WIN_K,   XK_v,      setlayout,      {.v = &layouts[float_layout]} },
 
 	CMD(Mod2Mask ,XK_Return,"2"),
 	CMD(Mod3Mask ,XK_Return,"3"),
@@ -183,9 +185,14 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_7,                      6)
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
-	{ WIN_K,             XK_Escape,      quit,           {0} },
+	//{ WIN_K,             XK_Escape,      quit,           {0} },
+	WIN(XK_Escape, "/bin/sh","-c", SCRIPTS "purge_maybe.sh" ),
+	//KEY(XF86XK_AudioRaiseVolume, "/bin/sh","-c", SCRIPTS "up_volume.sh" ),
+	//KEY(XF86XK_AudioLowerVolume, "/bin/sh","-c", SCRIPTS "down_volume.sh" ),
+	KEY(XF86XK_MonBrightnessUp, "/bin/sh","-c", SCRIPTS "up_volume.sh" ),
+	KEY(XF86XK_MonBrightnessDown, "/bin/sh","-c", SCRIPTS "down_volume.sh" ),
 
-
+	
 
 /* 
 	//{ WIN_K,             XK_Return, spawn,          {.v = cmd_probe } },
