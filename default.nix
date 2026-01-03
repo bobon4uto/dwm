@@ -14,6 +14,7 @@
   #extraLibs ? config.dwm.extraLibs or [ ],
   # update script dependencies
   gitUpdater,
+	gnumake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,24 +23,30 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = ./.;
 
-  nativeBuildInputs = lib.optional stdenv.hostPlatform.isStatic pkg-config;
+  nativeBuildInputs = [
+		stdenv.cc 
+		pkg-config 
+		#stdenv.hostPlatform.isStatic 
+		#lib.optional
+	];
 
   buildInputs = [
+	  gnumake
     libX11
     libXinerama
     libXft
   ];
   #++ extraLibs;
 
-  preBuild = ''
-    makeFlagsArray+=(
-      "PREFIX=$out"
-      "CC=$CC"
-      ${lib.optionalString stdenv.hostPlatform.isStatic ''
-        LDFLAGS="$(${stdenv.cc.targetPrefix}pkg-config --static --libs x11 xinerama xft)"
-      ''}
-    )
-  '';
+ # preBuild = ''
+ #   makeFlagsArray+=(
+ #     "PREFIX=$out"
+ #     "CC=$CC"
+ #     ${lib.optionalString stdenv.hostPlatform.isStatic ''
+ #       LDFLAGS="$(${stdenv.cc.targetPrefix}pkg-config --static --libs x11 xinerama xft)"
+ #     ''}
+ #   )
+ # '';
 
   # Allow users set their own list of patches
   #inherit patches;
@@ -53,8 +60,12 @@ stdenv.mkDerivation (finalAttrs: {
  #   lib.optionalString (conf != null) "cp ${configFile} config.def.h";
 
 buildPhase = ''
-  make all
-''
+		make all
+'';
+installPhase = ''
+	mkdir -p $out/bin
+	mv dwm $out/bin/
+'';
 
   meta = {
     homepage = "https://dwm.suckless.org/";
