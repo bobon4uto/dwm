@@ -52,6 +52,9 @@ stdenv.mkDerivation (finalAttrs: {
  #   in
  #   lib.optionalString (conf != null) "cp ${configFile} config.def.h";
 
+buildPhase = ''
+  make all
+''
 
   meta = {
     homepage = "https://dwm.suckless.org/";
