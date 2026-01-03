@@ -1,2 +1,2 @@
 { pkgs ? import <nixpkgs> {} }:
-callPackage package.nix;
+callPackage package.nix
