@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchzip,
-  libX11,
-  libXinerama,
-  libXft,
+	libX11,
+	libXinerama,
+	libXft,
   writeText,
   pkg-config,
   # customization
