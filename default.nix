@@ -8,7 +8,7 @@
   writeText,
   pkg-config,
   # customization
-  config,
+  #config,
   conf ? config.dwm.conf or null,
   patches ? config.dwm.patches or [ ],
   extraLibs ? config.dwm.extraLibs or [ ],
@@ -18,9 +18,9 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "dwm";
-  version = "6.6";
+  version = "67"; # no way 
 
-  src = /home/vova/dev/dwm;
+  src = ./.;
 
   nativeBuildInputs = lib.optional stdenv.hostPlatform.isStatic pkg-config;
 
@@ -45,12 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
   inherit patches;
 
   # Allow users to set the config.def.h file containing the configuration
-  postPatch =
-    let
-      configFile =
-        if lib.isDerivation conf || builtins.isPath conf then conf else writeText "config.def.h" conf;
-    in
-    lib.optionalString (conf != null) "cp ${configFile} config.def.h";
+ # postPatch =
+ #   let
+ #     configFile =
+ #       if lib.isDerivation conf || builtins.isPath conf then conf else writeText "config.def.h" conf;
+ #   in
+ #   lib.optionalString (conf != null) "cp ${configFile} config.def.h";
 
 
   meta = {
