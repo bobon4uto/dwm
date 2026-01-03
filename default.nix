@@ -9,9 +9,9 @@
   pkg-config,
   # customization
   #config,
-  conf ? config.dwm.conf or null,
-  patches ? config.dwm.patches or [ ],
-  extraLibs ? config.dwm.extraLibs or [ ],
+  #conf ? config.dwm.conf or null,
+  #patches ? config.dwm.patches or [ ],
+  #extraLibs ? config.dwm.extraLibs or [ ],
   # update script dependencies
   gitUpdater,
 }:
@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     libX11
     libXinerama
     libXft
-  ]
-  ++ extraLibs;
+  ];
+  #++ extraLibs;
 
   preBuild = ''
     makeFlagsArray+=(
@@ -42,7 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   # Allow users set their own list of patches
-  inherit patches;
+  #inherit patches;
 
   # Allow users to set the config.def.h file containing the configuration
  # postPatch =
