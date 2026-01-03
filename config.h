@@ -103,12 +103,10 @@ typedef struct {
 static const Autostartcmd autostart[]  = {
 	ASTART(1,"/bin/sh", "-c", SCRIPTS "tearing_fix.sh"),
 	//{.cmd = emacscmd,     .tags = 1 << 7 },
-	ASTART(0,"kitty","--hold","nvim"),
 	ASTART(1,"/bin/sh", "-c", SCRIPTS "autostart_workaround.sh"),
 	ASTART(1,"kitty", "--name","kitty1"),
-	ASTART(1,"kitty", "--name","kitty1"),
-	ASTART(1,"kitty", "--name","kitty1"),
 	ASTART(2,"librewolf"),
+	ASTART(0,"kitty","--hold","nvim"),
 	//ASTART(1,"dunst"),
 	ASTART(1,"dunst"),
 	ASTART(1,"/bin/sh", "-c", SCRIPTS "caps_to_esc.sh"),
